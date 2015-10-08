@@ -5,7 +5,7 @@
     private $baseUrl     = "https://api.groupme.com/v3";
     
     // token used in all API calls
-    private $token  = "__YOUR_TOKEN_HERE__";
+    private $token  = "";
     
     /**
       *  Curl POST
@@ -18,19 +18,18 @@
     */
     public function apiPost($url,$data=array()) {
       $ch = curl_init($url);
-      if(empty($data['file'])) {
-        $data = json_encode($data);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-        'Content-Type: application/json',
-        'Content-Length: ' . strlen($data))
-        );
-      }
+      // if(empty($data['file'])) {
+        // $data = json_encode($data);
+        // curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        // 'Content-Type: application/json',
+        // 'Content-Length: ' . strlen($data))
+        // );
+      // }
       curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
       curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);  
-      
       $c = curl_exec($ch);
-      return $c;
+	  return $c;
     }
     
     /**
@@ -66,26 +65,45 @@
       *
     */
     public function botPost($groupId,$strBotId,$strMessage,$pictureUrl = false) {
-      if (($strMessage == false) && ($pictureUrl == false)) {
-        return false;
-      }
-      if (empty($pictureUrl) === false){
-        if (stripos($pictureUrl,"i.groupme.com") === false) {
-          // Upload image URL to the GroupMe image service and use that URL instead
-          $pictureUrl = $this->uploadImage($pictureUrl);
-        }
-        $arrPayload["attachments"][] = array(
-        "type" => "image",
-        "url" => $pictureUrl
-        );
-      }    
-      $arrPayload["bot_id"]   = $strBotId;
-      $arrPayload["text"]     = $strMessage;
       
-      $postUrl = $this->baseUrl."/bots/post?token={$this->token}";
-      return $this->apiPost($postUrl,$arrPayload);
+      // if (empty($pictureUrl) === false){
+      // if (stripos($pictureUrl,"i.groupme.com") === false) {
+      // Upload image URL to the GroupMe image service and use that URL instead
+      // $pictureUrl = $this->uploadImage($pictureUrl);
+      // }
+      // $arrPayload["attachments"][] = array(
+      // "type" => "image",
+      // "url" => $pictureUrl
+      // );
+      //}    
+      //$arrPayload["bot_id"]   = $strBotId;
+      //$arrPayload["text"]     = $strMessage;
+      
+      //$postUrl = $this->baseUrl."/bots/post?token={$this->token}";
+      //$postUrl = $this->baseUrl."/bots/post";
+	  
+	  $fields = array(
+			'bot_id' => $strBotId,
+			'text' => $strMessage
+		);
+		$response = $this->do_post("https://api.groupme.com/v3/bots/post",$fields);	  
+	  //return $this->apiPost($postUrl,$arrPayload);   
+	  return $response;
     }
     
+public function do_post($url, $data)
+{
+	$ch = curl_init($url);
+
+  curl_setopt($ch, CURLOPT_POST, 1);
+  curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+  $response = curl_exec($ch);
+  curl_close($ch);
+  return $response;
+}
+	
     /**
       *  Add user(s) to a group
       *  
